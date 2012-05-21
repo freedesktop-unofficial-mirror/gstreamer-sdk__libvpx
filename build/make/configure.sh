@@ -628,6 +628,12 @@ process_common_toolchain() {
     if [ -d "/Developer/SDKs/MacOSX10.7.sdk" ]; then
         osx_sdk_dir="/Developer/SDKs/MacOSX10.7.sdk"
     fi
+    if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"]; then
+        osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
+    fi
+    if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"]; then
+        osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
+    fi
 
     case ${toolchain} in
         *-darwin8-*)
