@@ -114,7 +114,7 @@ vp8_multi_resolution_encoder.DESCRIPTION  = VP8 Multiple-resolution Encoding
 # We should not link to math library (libm) on RVCT
 # when building for bare-metal targets
 ifeq ($(CONFIG_OS_SUPPORT), yes)
-CODEC_EXTRA_LIBS-$(CONFIG_VP8)         += m
+CODEC_EXTRA_LIBS-$(CONFIG_VP8)         += m pthread
 else
     ifeq ($(CONFIG_GCC), yes)
     CODEC_EXTRA_LIBS-$(CONFIG_VP8)         += m
