@@ -125,7 +125,7 @@ int arm_cpu_caps(void)
 }
 
 #elif defined(__ANDROID__) /* end _MSC_VER */
-#include <cpu-features.h>
+#include <cpu-features.c>
 
 int arm_cpu_caps(void)
 {
