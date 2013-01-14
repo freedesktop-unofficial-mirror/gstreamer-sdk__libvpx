@@ -1003,7 +1003,7 @@ process_common_toolchain() {
                 add_asflags -f x64
                 enabled debug && add_asflags -g cv8
             ;;
-            linux*|solaris*)
+            linux*|solaris*|android*)
                 add_asflags -f elf${bits}
                 enabled debug && [ "${AS}" = yasm ] && add_asflags -g dwarf2
                 enabled debug && [ "${AS}" = nasm ] && add_asflags -g
