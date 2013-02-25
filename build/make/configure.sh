@@ -592,6 +592,9 @@ process_common_toolchain() {
                 tgt_isa=x86_64
                 tgt_os=darwin12
                 ;;
+            *ios6*)
+                tgt_os=ios6
+                ;;
             *mingw32*|*cygwin*)
                 [ -z "$tgt_isa" ] && tgt_isa=x86
                 tgt_os=win32
@@ -658,18 +661,39 @@ process_common_toolchain() {
                     fi
                 done
             fi
+            if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk" ]; then
+                osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
+            fi
+            if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" ]; then
+                osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
+            fi
             ;;
+        *-ios*)
+            case "$tgt_isa" in
+                arm*)
+                    IOS_PLATFORM="iPhoneOS"
+                    ;;
+                x86*)
+                    IOS_PLATFORM="iPhoneSimulator"
+                    ;;
+                esac
+            if [ -z "${sdk_path}" ]; then
+                SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/${IOS_PLATFORM}.platform/Developer"
+            else
+                SDK_PATH=${sdk_path}
+            fi
+            IOS_SDK_ROOT="${SDK_PATH}/SDKs"
+            IOS_SDK_VERSIONS="6.0 6.1"
+            for v in ${IOS_SDK_VERSIONS}; do
+                if [ -d "${IOS_SDK_ROOT}/${IOS_PLATFORM}${v}.sdk" ]; then
+                    osx_sdk_dir="${IOS_SDK_ROOT}/${IOS_PLATFORM}${v}.sdk"
+                fi
+            done
     esac
 
     if [ -d "${osx_sdk_dir}" ]; then
         add_cflags  "-isysroot ${osx_sdk_dir}"
         add_ldflags "-isysroot ${osx_sdk_dir}"
-    fi
-    if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk" ]; then
-        osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
-    fi
-    if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" ]; then
-        osx_sdk_dir="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
     fi
 
     case ${toolchain} in
@@ -692,6 +716,10 @@ process_common_toolchain() {
         *-darwin12-*)
             add_cflags  "-mmacosx-version-min=10.8"
             add_ldflags "-mmacosx-version-min=10.8"
+            ;;
+        *-ios6-*)
+            add_cflags  "-miphoneos-version-min=6.0"
+            add_ldflags "-miphoneos-version-min=6.0"
             ;;
     esac
 
@@ -868,6 +896,26 @@ process_common_toolchain() {
 
             asm_conversion_cmd="${source_path}/build/make/ads2gas_apple.pl"
          ;;
+        ios*)
+            TOOLCHAIN_PATH=${SDK_PATH}/usr/bin
+            CC=${TOOLCHAIN_PATH}/llvm-gcc-4.2
+            AR=${TOOLCHAIN_PATH}/ar
+            LD=${TOOLCHAIN_PATH}/llvm-gcc-4.2
+            AS=${TOOLCHAIN_PATH}/as
+            STRIP=${TOOLCHAIN_PATH}/strip
+            NM=${TOOLCHAIN_PATH}/nm
+            AS_SFX=.s
+
+            # ASFLAGS is written here instead of using check_add_asflags
+            # because we need to overwrite all of ASFLAGS and purge the
+            # options that were put in above
+            ASFLAGS="-version -arch ${tgt_isa} -g"
+
+            add_cflags -arch ${tgt_isa}
+            add_ldflags -arch ${tgt_isa}
+
+            asm_conversion_cmd="${source_path}/build/make/ads2gas_apple.pl"
+         ;;
 
         linux*)
             enable linux
@@ -1009,7 +1057,7 @@ process_common_toolchain() {
                 enabled debug && [ "${AS}" = nasm ] && add_asflags -g
                 [ "${AS##*/}" = nasm ] && check_asm_align
             ;;
-            darwin*)
+            darwin*|ios*)
                 add_asflags -f macho${bits}
                 enabled x86 && darwin_arch="-arch i386" || darwin_arch="-arch x86_64"
                 add_cflags  ${darwin_arch}
