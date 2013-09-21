@@ -595,6 +595,9 @@ process_common_toolchain() {
             *ios6*)
                 tgt_os=ios6
                 ;;
+            *ios7*)
+                tgt_os=ios7
+                ;;
             *mingw32*|*cygwin*)
                 [ -z "$tgt_isa" ] && tgt_isa=x86
                 tgt_os=win32
@@ -683,7 +686,7 @@ process_common_toolchain() {
                 SDK_PATH=${sdk_path}
             fi
             IOS_SDK_ROOT="${SDK_PATH}/SDKs"
-            IOS_SDK_VERSIONS="6.0 6.1"
+            IOS_SDK_VERSIONS="6.0 6.1 7.0"
             for v in ${IOS_SDK_VERSIONS}; do
                 if [ -d "${IOS_SDK_ROOT}/${IOS_PLATFORM}${v}.sdk" ]; then
                     osx_sdk_dir="${IOS_SDK_ROOT}/${IOS_PLATFORM}${v}.sdk"
@@ -717,9 +720,9 @@ process_common_toolchain() {
             add_cflags  "-mmacosx-version-min=10.8"
             add_ldflags "-mmacosx-version-min=10.8"
             ;;
-        *-ios6-*)
-            add_cflags  "-miphoneos-version-min=6.0"
-            add_ldflags "-miphoneos-version-min=6.0"
+        *-ios*)
+            add_cflags  "-miphoneos-version-min=5.1"
+            add_ldflags "-miphoneos-version-min=5.1"
             ;;
     esac
 
@@ -898,9 +901,14 @@ process_common_toolchain() {
          ;;
         ios*)
             TOOLCHAIN_PATH=${SDK_PATH}/usr/bin
-            CC=${TOOLCHAIN_PATH}/llvm-gcc-4.2
+	    if test "x$tgt_os" = "xios7"; then
+              CC=clang
+	      LD=clang
+	    else
+              CC=${TOOLCHAIN_PATH}/llvm-gcc-4.2
+              LD=${TOOLCHAIN_PATH}/llvm-gcc-4.2
+	    fi
             AR=${TOOLCHAIN_PATH}/ar
-            LD=${TOOLCHAIN_PATH}/llvm-gcc-4.2
             AS=${TOOLCHAIN_PATH}/as
             STRIP=${TOOLCHAIN_PATH}/strip
             NM=${TOOLCHAIN_PATH}/nm
